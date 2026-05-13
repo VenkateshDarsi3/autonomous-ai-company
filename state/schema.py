@@ -14,6 +14,35 @@ from pydantic import BaseModel, Field
 import operator
 
 
+# ── Architecture models ───────────────────────────────────────────────────────
+
+class DatabaseTable(BaseModel):
+    """A single database table with its columns."""
+    name: str = Field(description="Table name, e.g. 'users'")
+    columns: list[str] = Field(description="Column definitions, e.g. ['id UUID PRIMARY KEY', 'email VARCHAR(255) UNIQUE']")
+    relationships: list[str] = Field(default_factory=list, description="Foreign key relationships, e.g. ['user_id references users(id)']")
+
+
+class APIEndpoint(BaseModel):
+    """A single REST API endpoint."""
+    method: str = Field(description="HTTP method: GET, POST, PUT, DELETE, PATCH")
+    path: str = Field(description="URL path, e.g. '/api/users/:id'")
+    description: str = Field(description="What this endpoint does")
+    auth_required: bool = Field(default=True, description="Whether authentication is required")
+    request_body: Optional[str] = Field(default=None, description="Expected request body shape")
+    response: str = Field(description="What the endpoint returns")
+
+
+class Architecture(BaseModel):
+    """Full system architecture designed by the Architect Agent."""
+    summary: str = Field(description="High-level architecture summary")
+    database_tables: list[DatabaseTable] = Field(description="All database tables")
+    api_endpoints: list[APIEndpoint] = Field(description="All API endpoints")
+    folder_structure: list[str] = Field(description="Project folder structure as a list of paths, e.g. ['src/controllers/auth.js', 'src/models/user.js']")
+    key_decisions: list[str] = Field(description="Important architectural decisions and why they were made")
+    dependencies: list[str] = Field(description="npm/pip packages needed, e.g. ['express', 'jsonwebtoken', 'pg']")
+
+
 # ── Ticket model ─────────────────────────────────────────────────────────────
 
 class Ticket(BaseModel):
@@ -74,6 +103,12 @@ class ProjectState(BaseModel):
     prd: Optional[PRD] = Field(
         default=None,
         description="The Product Requirements Document created by the PM Agent"
+    )
+
+    # Architect Agent output
+    architecture: Optional[Architecture] = Field(
+        default=None,
+        description="System architecture designed by the Architect Agent"
     )
 
     tickets: Annotated[list[Ticket], operator.add] = Field(

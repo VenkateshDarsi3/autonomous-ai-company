@@ -98,6 +98,56 @@ def print_tickets(tickets):
         ))
 
 
+def print_architecture(arch):
+    """Display the system architecture."""
+    # Database tables
+    console.print(Panel(
+        "\n".join([
+            f"[cyan]{t.name}[/cyan]\n" +
+            "\n".join(f"    [dim]{col}[/dim]" for col in t.columns) +
+            ("\n  [yellow]Relations:[/yellow] " + ", ".join(t.relationships) if t.relationships else "")
+            for t in arch.database_tables
+        ]),
+        title="🗄️  Database Schema",
+        border_style="blue"
+    ))
+    console.print()
+
+    # API endpoints table
+    table = Table(title="🔌 API Endpoints", border_style="magenta")
+    table.add_column("Method", style="bold", no_wrap=True)
+    table.add_column("Path", style="cyan")
+    table.add_column("Description", style="white")
+    table.add_column("Auth", style="yellow")
+
+    method_colors = {"GET": "green", "POST": "blue", "PUT": "yellow", "DELETE": "red", "PATCH": "magenta"}
+    for ep in arch.api_endpoints:
+        color = method_colors.get(ep.method, "white")
+        table.add_row(
+            f"[{color}]{ep.method}[/{color}]",
+            ep.path,
+            ep.description,
+            "🔒 Yes" if ep.auth_required else "🔓 No",
+        )
+    console.print(table)
+    console.print()
+
+    # Key decisions
+    console.print(Panel(
+        "\n".join(f"  • {d}" for d in arch.key_decisions),
+        title="🧠 Key Architectural Decisions",
+        border_style="green"
+    ))
+    console.print()
+
+    # Dependencies
+    console.print(Panel(
+        "  " + "  |  ".join(arch.dependencies),
+        title="📦 Dependencies",
+        border_style="dim"
+    ))
+
+
 def print_log(log_entries):
     """Display the execution log."""
     console.print("\n[bold]📜 Execution Log:[/bold]")
@@ -156,6 +206,9 @@ def main():
     if final_state.get("log"):
         print_log(final_state["log"])
 
+    if final_state.get("architecture"):
+        print_architecture(final_state["architecture"])
+
     if final_state.get("errors"):
         console.print("\n[red bold]⚠️  Errors:[/red bold]")
         for err in final_state["errors"]:
@@ -163,9 +216,9 @@ def main():
 
     console.print()
     console.print(Panel(
-        "[bold green]Phase 1 complete![/bold green] 🎉\n\n"
-        "The PM Agent has created your PRD and tickets.\n"
-        "Next up: [cyan]Architect Agent[/cyan] will design the system architecture.",
+        "[bold green]Phase 2 complete![/bold green] 🎉\n\n"
+        "PM Agent + Architect Agent have finished.\n"
+        "Next up: [cyan]Backend Agent[/cyan] will write the actual API code.",
         title="🚀 What's Next",
         border_style="green"
     ))

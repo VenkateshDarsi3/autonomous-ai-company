@@ -27,6 +27,7 @@ from langgraph.graph import StateGraph, START, END
 
 from state.schema import ProjectState
 from agents.pm_agent import run_pm_agent
+from agents.architect_agent import run_architect_agent
 
 
 def build_workflow() -> StateGraph:
@@ -38,16 +39,13 @@ def build_workflow() -> StateGraph:
     """
 
     # ── Step 1: Create the graph with our state schema ────────────────────────
-    # StateGraph knows about ProjectState, so it handles merging automatically
     graph = StateGraph(ProjectState)
 
     # ── Step 2: Register agents as nodes ─────────────────────────────────────
-    # Each node gets a name and the function to call
-    # (add more agents here as we build them)
-    graph.add_node("pm_agent", run_pm_agent)
+    graph.add_node("pm_agent",       run_pm_agent)
+    graph.add_node("architect",      run_architect_agent)
 
     # FUTURE agents to add here:
-    # graph.add_node("architect", run_architect_agent)
     # graph.add_node("backend",   run_backend_agent)
     # graph.add_node("frontend",  run_frontend_agent)
     # graph.add_node("qa",        run_qa_agent)
@@ -55,22 +53,17 @@ def build_workflow() -> StateGraph:
     # graph.add_node("devops",    run_devops_agent)
 
     # ── Step 3: Connect the nodes with edges ──────────────────────────────────
-    # START → pm_agent → END
-    graph.add_edge(START, "pm_agent")
-    graph.add_edge("pm_agent", END)
+    # START → pm_agent → architect → END
+    graph.add_edge(START,       "pm_agent")
+    graph.add_edge("pm_agent",  "architect")
+    graph.add_edge("architect", END)
 
-    # FUTURE edges (sequential):
-    # graph.add_edge("pm_agent", "architect")
+    # FUTURE edges:
     # graph.add_edge("architect", "backend")
+    # graph.add_edge("architect", "frontend")  # parallel with backend
     # graph.add_edge("backend",   "qa")
-    # ...
-
-    # FUTURE parallel edges (backend + frontend at the same time):
-    # from langgraph.graph import Send
-    # graph.add_conditional_edges("architect", lambda s: ["backend", "frontend"])
 
     # ── Step 4: Compile the graph ─────────────────────────────────────────────
-    # This validates the graph structure and returns a runnable object
     compiled = graph.compile()
 
     return compiled

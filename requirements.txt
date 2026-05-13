@@ -1,0 +1,11 @@
+# Core LLM & Agent Framework
+anthropic>=0.30.0          # Claude API (our main LLM)
+langgraph>=0.2.0           # Multi-agent orchestration
+langchain-anthropic>=0.2.0 # LangChain wrapper for Claude
+
+# Data validation & structured outputs
+pydantic>=2.7.0            # Type-safe data models
+
+# Utilities
+python-dotenv>=1.0.0       # Load .env secrets
+rich>=13.7.0               # Pretty terminal output
